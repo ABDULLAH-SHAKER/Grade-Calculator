@@ -1,94 +1,139 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import './App.css'; 
 
 function App() {
-  const [midterm, setMidterm] = useState('');
-  const [final, setFinal] = useState('');
-  const [result, setResult] = useState('');
+  const [inputs, setInputs] = useState({
+    midtermPercent: '30',
+    finalPercent: '40',
+    quizPercent: '15',
+    assignmentPercent: '15',
+    midtermGrade: '',
+    finalGrade: '',
+    quizGrade: '',
+    assignmentGrade: '',
+  });
 
-  const handleCalculate = () => {
-    const mid = parseFloat(midterm);
-    const fin = parseFloat(final);
-    const passingGrade = 50; 
+  const [result, setResult] = useState(null);
 
-    if (isNaN(mid) || mid < 0 || mid > 100) {
-      setResult('Please enter a valid midterm grade (0-100).');
+  const handleChange = (e) => {
+    setInputs({ ...inputs, [e.target.name]: e.target.value });
+  };
+
+  const calculateTotal = () => {
+    const {
+      midtermPercent,
+      finalPercent,
+      quizPercent,
+      assignmentPercent,
+      midtermGrade,
+      finalGrade,
+      quizGrade,
+      assignmentGrade,
+    } = inputs;
+
+    if (midtermPercent === '' || midtermGrade === '') {
+      alert('Midterm grade and percent are required!');
       return;
     }
 
-    if (final === '') {
-      const requiredFinal = (passingGrade - (mid * 0.4)) / 0.6;
-      if (requiredFinal > 100) {
-        setResult('Sorry, it’s impossible to pass with this midterm grade.');
-      } else {
-        setResult(`You need at least ${requiredFinal.toFixed(2)} in the final to pass.`);
-      }
-    } else {
-      if (isNaN(fin) || fin < 0 || fin > 100) {
-        setResult('Please enter a valid final grade (0-100).');
-        return;
-      }
+    const values = {
+      midtermPercent: parseFloat(midtermPercent) || 0,
+      finalPercent: parseFloat(finalPercent) || 0,
+      quizPercent: parseFloat(quizPercent) || 0,
+      assignmentPercent: parseFloat(assignmentPercent) || 0,
+      midtermGrade: parseFloat(midtermGrade) || 0,
+      finalGrade: parseFloat(finalGrade) || 0,
+      quizGrade: parseFloat(quizGrade) || 0,
+      assignmentGrade: parseFloat(assignmentGrade) || 0,
+    };
 
-      const total = (mid * 0.4) + (fin * 0.6);
-      if (total >= passingGrade) {
-        setResult(`✅ You passed! Your total grade is ${total.toFixed(2)}.`);
+    const total =
+      (values.midtermGrade * values.midtermPercent) / 100 +
+      (values.finalGrade * values.finalPercent) / 100 +
+      (values.quizGrade * values.quizPercent) / 100 +
+      (values.assignmentGrade * values.assignmentPercent) / 100;
+
+    setResult(total.toFixed(2));
+
+    if (inputs.finalGrade === '') {
+      const needed = (50 - total) / (values.finalPercent / 100);
+
+      if (values.finalPercent > 0) {
+        if (needed <= 100) {
+          alert(`You need at least ${needed.toFixed(2)} in the Final to pass.`);
+        } else {
+          alert(`Even if you get 100 in the Final, you can't pass.`);
+        }
       } else {
-        setResult(`❌ You failed. Your total grade is ${total.toFixed(2)}.`);
+        alert(`You didn't enter a final grade and the percent is 0.`);
       }
     }
   };
 
   return (
-    <div className="min-vh-100 bg-secondary">
-  <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-    <div className="card shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>
-      <div className="card-body">
-        <h3 className="card-title text-center mb-4">🎓 Grade Calculator</h3>
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">Grade Calculator v1.1.0</h2>
 
-       
-        <div className="mb-3">
-          <label className="form-label">Midterm Grade</label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Enter midterm grade"
-            value={midterm}
-            onChange={(e) => setMidterm(e.target.value)}
-          />
+      <div className="row">
+        <div className="col-md-6">
+          <h5>Percent Weights (%)</h5>
+          <div className="form-group mb-3">
+            <label>Midterm</label>
+            <input type="number" name="midtermPercent" className="form-control" value={inputs.midtermPercent} onChange={handleChange} />
+          </div>
+          <div className="form-group mb-3">
+            <label>Final <small className="text-muted">(optional)</small></label>
+            <input type="number" name="finalPercent" className="form-control" value={inputs.finalPercent} onChange={handleChange} />
+          </div>
+          <div className="form-group mb-3">
+            <label>Quiz <small className="text-muted">(optional)</small></label>
+            <input type="number" name="quizPercent" className="form-control" value={inputs.quizPercent} onChange={handleChange} />
+          </div>
+          <div className="form-group mb-3">
+            <label>Assignment <small className="text-muted">(optional)</small></label>
+            <input type="number" name="assignmentPercent" className="form-control" value={inputs.assignmentPercent} onChange={handleChange} />
+          </div>
         </div>
 
-        
-        <div className="mb-3">
-          <label className="form-label">Final Grade (optional)</label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Enter final grade"
-            value={final}
-            onChange={(e) => setFinal(e.target.value)}
-          />
+        <div className="col-md-6">
+          <h5>Grades (out of 100)</h5>
+          <div className="form-group mb-3">
+            <label>Midterm</label>
+            <input type="number" name="midtermGrade" className="form-control" onChange={handleChange} />
+          </div>
+          <div className="form-group mb-3">
+            <label>Final <small className="text-muted">(optional)</small></label>
+            <input type="number" name="finalGrade" className="form-control" onChange={handleChange} />
+          </div>
+          <div className="form-group mb-3">
+            <label>Quiz <small className="text-muted">(optional)</small></label>
+            <input type="number" name="quizGrade" className="form-control" onChange={handleChange} />
+          </div>
+          <div className="form-group mb-3">
+            <label>Assignment <small className="text-muted">(optional)</small></label>
+            <input type="number" name="assignmentGrade" className="form-control" onChange={handleChange} />
+          </div>
         </div>
+      </div>
 
-        <button className="btn btn-primary w-100" onClick={handleCalculate}>
-          Calculate
+      <div className="text-center mt-4">
+        <button className="btn btn-primary" onClick={calculateTotal}>
+          Calculate Total
         </button>
 
-        
-      Developer: ABDULLAH BAMALHAS   &nbsp;|&nbsp;&nbsp;Version: 1.0.0
-        
-        
-        {result && (
-          <div className="alert alert-info mt-4" role="alert">
-            {result}
+        {result !== null && (
+          <div className="mt-3 alert alert-info">
+            Total Grade: <strong>{result}</strong>{' '}
+            {result >= 50 ? '✅ Passed' : '❌ Failed'}
           </div>
         )}
       </div>
+
+      <footer className="text-center mt-5 text-muted">
+        Developed by <strong>ABDULLAH BAMALHAS</strong> © 2025
+      </footer>
     </div>
-  </div>
-  </div>
-);
+  );
 }
 
 export default App;
